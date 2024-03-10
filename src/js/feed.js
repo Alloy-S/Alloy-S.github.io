@@ -1,6 +1,8 @@
 var contentExercise = document.querySelector("#ContentExercise")
 var intallBtn = document.querySelector("#btn-install");
-
+var dataLength = 0;
+var notif = false;
+var myInterval;
 
 function install() {
   // createPostArea.style.display = 'block';
@@ -8,7 +10,7 @@ function install() {
 
     deferredPrompt.prompt();
 
-    deferredPrompt.userChoice.then(function(choiceResult) {
+    deferredPrompt.userChoice.then(function (choiceResult) {
       console.log(choiceResult.outcome);
 
       if (choiceResult.outcome === 'dismissed') {
@@ -39,7 +41,7 @@ function closeCreatePostModal() {
 intallBtn.addEventListener('click', install);
 
 function clearCards() {
-  while(contentExercise.hasChildNodes()) {
+  while (contentExercise.hasChildNodes()) {
     contentExercise.removeChild(contentExercise.lastChild);
   }
 }
@@ -47,9 +49,9 @@ function clearCards() {
 function createCard(data) {
 
   const exerciseElement = document.createElement('div');
-    exerciseElement.classList.add('col-md-4', 'col-sm-6','col-12', 'd-flex', 'justify-content-center', 'mb-3');
+  exerciseElement.classList.add('col-md-4', 'col-sm-6', 'col-12', 'd-flex', 'justify-content-center', 'mb-3');
 
-    exerciseElement.innerHTML = `
+  exerciseElement.innerHTML = `
       <div class="content">
         <a href="detail.html?id=${data.id}">
           <div class="content-overlay"></div>
@@ -61,8 +63,31 @@ function createCard(data) {
       </div>
     `;
 
-    // Append the exercise element to the exercise container
-    contentExercise.appendChild(exerciseElement);
+  // Append the exercise element to the exercise container
+  contentExercise.appendChild(exerciseElement);
+}
+
+function checkData() {
+  fetch(url)
+    .then(function (res) {
+      return res.json();
+    })
+    .then(function (data) {
+
+      console.log("jumlah old data:", dataLength);
+      console.log("jumlah new data:", data.length);
+      if (dataLength !== data.length && !notif) {
+        Toastify({
+          text: "Data diperbarui, Harap Refresh",
+          duration: -1,
+          close: true,
+          gravity: "bottom",
+          position: "right"
+
+        }).showToast();
+        notif = true;
+      }
+    });
 }
 
 function updateUI(data) {
@@ -76,12 +101,13 @@ var url = 'https://test1-pwa-alloy-default-rtdb.asia-southeast1.firebasedatabase
 var networkDataReceived = false;
 
 fetch(url)
-  .then(function(res) {
+  .then(function (res) {
     return res.json();
   })
-  .then(function(data) {
+  .then(function (data) {
     networkDataReceived = true;
     console.log('From web', data);
+    dataLength = data.length;
     var dataArray = [];
     for (var key in data) {
       dataArray.push(data[key]);
@@ -91,10 +117,24 @@ fetch(url)
 
 if ('indexedDB' in window) {
   readAllData('posts')
-    .then(function(data) {
+    .then(function (data) {
       if (!networkDataReceived) {
         console.log('From cache', data);
         updateUI(data);
       }
     });
 }
+
+if (navigator.onLine) {
+  myInterval = setInterval(checkData, 5000);
+} 
+
+self.addEventListener('online', function(event) {
+  console.log('Klien kembali online');
+  myInterval = setInterval(checkData, 5000);
+});
+
+self.addEventListener('offline', function(event) {
+  console.log('Klien kembali offline');
+  clearInterval(myInterval);
+});

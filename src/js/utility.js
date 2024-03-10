@@ -1,24 +1,34 @@
 
 var dbPromise = idb.open('posts-store', 1, function (db) {
   if (!db.objectStoreNames.contains('posts')) {
-    db.createObjectStore('posts', {keyPath: 'id'});
+    db.createObjectStore('posts', { keyPath: 'id' });
   }
 });
 
 function writeData(st, data) {
   return dbPromise
-    .then(function(db) {
+    .then(function (db) {
       var tx = db.transaction(st, 'readwrite');
       var store = tx.objectStore(st);
       console.log(data);
       store.put(data);
       return tx.complete;
+      // return store.get(data.id).then(existingData => {
+      //   // If data with the same id already exists, don't store it again
+      //   if (!existingData) {
+      //     console.log('Data is not already set. Storing data:', data);
+      //     store.put(data);
+      //   } else {
+      //     console.log('Data is already set. Skipping storing data:', data);
+      //   }
+      //   return tx.complete;
+      // });
     });
 }
 
 function readAllData(st) {
   return dbPromise
-    .then(function(db) {
+    .then(function (db) {
       var tx = db.transaction(st, 'readonly');
       var store = tx.objectStore(st);
       return store.getAll();
@@ -27,7 +37,7 @@ function readAllData(st) {
 
 function clearAllData(st) {
   return dbPromise
-    .then(function(db) {
+    .then(function (db) {
       var tx = db.transaction(st, 'readwrite');
       var store = tx.objectStore(st);
       store.clear();
@@ -37,13 +47,13 @@ function clearAllData(st) {
 
 function deleteItemFromData(st, id) {
   dbPromise
-    .then(function(db) {
+    .then(function (db) {
       var tx = db.transaction(st, 'readwrite');
       var store = tx.objectStore(st);
       store.delete(id);
       return tx.complete;
     })
-    .then(function() {
+    .then(function () {
       console.log('Item deleted!');
     });
 }

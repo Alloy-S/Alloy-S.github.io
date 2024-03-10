@@ -75,7 +75,7 @@ self.addEventListener('fetch', function (event) {
           })
           .then(function (data) {
             for (var key in data) {
-              console.log('write data', data[key]);
+              // console.log('write data', data[key]);
               if (data[key].hasOwnProperty('id')) {
                 writeData('posts', data[key])
               } else {
