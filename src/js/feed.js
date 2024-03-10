@@ -4,6 +4,10 @@ var dataLength = 0;
 var notif = false;
 var myInterval;
 
+if (localStorage.lastData) {
+  dataLength = localStorage.lastData;
+}
+
 function install() {
   // createPostArea.style.display = 'block';
   if (deferredPrompt) {
@@ -76,7 +80,7 @@ function checkData() {
 
       console.log("jumlah old data:", dataLength);
       console.log("jumlah new data:", data.length);
-      if (dataLength !== data.length && !notif) {
+      if (parseInt(localStorage.lastData) !== data.length && !notif) {
         Toastify({
           text: "Data diperbarui, Harap Refresh",
           duration: -1,
@@ -107,17 +111,34 @@ fetch(url)
   .then(function (data) {
     networkDataReceived = true;
     console.log('From web', data);
-    dataLength = data.length;
+    localStorage.lastData = data.length;
+    // dataLength = data.length;
     var dataArray = [];
     for (var key in data) {
       dataArray.push(data[key]);
     }
     updateUI(dataArray);
+    clearAllData('posts')
+      .then(function () {
+          return data;
+      })
+      .then(function (data) {
+        for (var key in data) {
+          // console.log('write data', data[key]);
+          if (data[key].hasOwnProperty('id')) {
+            writeData('posts', data[key])
+          } else {
+            // console.error("Object doesn't have a valid key path.");
+          }
+        }
+      });
   });
 
+  console.log('idb: ', ('indexedDB' in window));
 if ('indexedDB' in window) {
   readAllData('posts')
     .then(function (data) {
+      console.log('From cache awal ', data);
       if (!networkDataReceived) {
         console.log('From cache', data);
         updateUI(data);
@@ -129,12 +150,12 @@ if (navigator.onLine) {
   myInterval = setInterval(checkData, 5000);
 } 
 
-self.addEventListener('online', function(event) {
+self.addEventListener('online', function (event) {
   console.log('Klien kembali online');
   myInterval = setInterval(checkData, 5000);
 });
 
-self.addEventListener('offline', function(event) {
+self.addEventListener('offline', function (event) {
   console.log('Klien kembali offline');
   clearInterval(myInterval);
 });

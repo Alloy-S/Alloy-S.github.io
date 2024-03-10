@@ -8,18 +8,21 @@ var STATIC_FILES = [
   '/index.html',
   '/offline.html',
   '/about.html',
+  '/manifest.json',
   '/src/js/app.js',
   '/src/js/feed.js',
   '/src/js/feed2.js',
   '/src/js/idb.js',
   '/src/js/promise.js',
   '/src/js/fetch.js',
+  '/src/js/utility.js',
   '/src/js/material.min.js',
   '/src/css/main.css',
   '/src/css/offline.css',
   'https://fonts.googleapis.com/css?family=Roboto:400,700',
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://fonts.googleapis.com/css?family=Raleway',
+  '/src/images/icons/icon-144x144.png'
 ];
 
 self.addEventListener('install', function (event) {
@@ -63,29 +66,30 @@ function isInArray(string, array) {
 self.addEventListener('fetch', function (event) {
 
   var url = 'https://test1-pwa-alloy-default-rtdb.asia-southeast1.firebasedatabase.app/posts';
-
-  
+  console.log("Code: ", event.request.url.indexOf(url));
+  console.log("Debug: ", event.request.url);
   if (event.request.url.indexOf(url) > -1) {
-    event.respondWith(fetch(event.request)
-      .then(function (res) {
-        var clonedRes = res.clone();
-        clearAllData('posts')
-          .then(function () {
-            return clonedRes.json();
-          })
-          .then(function (data) {
-            for (var key in data) {
-              // console.log('write data', data[key]);
-              if (data[key].hasOwnProperty('id')) {
-                writeData('posts', data[key])
-              } else {
-                // console.error("Object doesn't have a valid key path.");
-              }
-            }
-          });
-        return res;
-      })
-    );
+    // event.respondWith(fetch(event.request)
+    //   .then(function (res) {
+    //     var clonedRes = res.clone();
+        
+    //     clearAllData('posts')
+    //       .then(function () {
+    //         return clonedRes.json();
+    //       })
+    //       .then(function (data) {
+    //         for (var key in data) {
+    //           // console.log('write data', data[key]);
+    //           if (data[key].hasOwnProperty('id')) {
+    //             writeData('posts', data[key])
+    //           } else {
+    //             // console.error("Object doesn't have a valid key path.");
+    //           }
+    //         }
+    //       });
+    //     return res;
+    //   })
+    // );
   } else if (isInArray(event.request.url, STATIC_FILES)) {
     event.respondWith(
       caches.match(event.request)
