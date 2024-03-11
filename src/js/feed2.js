@@ -106,8 +106,10 @@ var networkStatus = false;
 // }
 
 if (navigator.onLine) {
+    console.log('Browser is online');
     networkStatus = true;
 } else {
+    console.log('Browser is offline');
     networkStatus = false;
 }
 
