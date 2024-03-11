@@ -82,60 +82,96 @@ function fillData(data) {
 
 var urlDetail = `https://test1-pwa-alloy-default-rtdb.asia-southeast1.firebasedatabase.app/posts/${id}.json`
 var networkDataReceived = false;
+var networkStatus = false;
 
-if (!navigator.onLine) {
-    console.log('Browser is offline');
-    // kalo mau pake local
-    // let dataPost = JSON.parse(localStorage.data);
-    // let data = dataPost[id];
-    // fillData(data);
-    if ('indexedDB' in window) {
-        readAllData('posts')
-            .then(function (data) {
-                if (!networkDataReceived) {
-                    console.log('From cache', data);
-                    fillData(data[id]);
-                }
-            });
-    }
+
+// if (!networkStatus) {
+//     console.log('Browser is offline');
+//     // kalo mau pake local
+//     // let dataPost = JSON.parse(localStorage.data);
+//     // let data = dataPost[id];
+//     // fillData(data);
+//     if ('indexedDB' in window) {
+//         readAllData('posts')
+//             .then(function (data) {
+//                 if (!networkDataReceived) {
+//                     console.log('From cache', data);
+//                     fillData(data[id]);
+//                 }
+//             });
+//     }
+// } else {
+//     console.log('Browser is online');
+//     fetchData();
+// }
+
+if (navigator.onLine) {
+    networkStatus = true;
 } else {
-    console.log('Browser is online');
-    fetchData();
+    networkStatus = false;
 }
 
+self.addEventListener('online', function (event) {
+    console.log('Klien kembali online');
+    networkStatus = true;
+    myInterval = setInterval(checkData, 5000);
+});
+
+self.addEventListener('offline', function (event) {
+    console.log('Klien kembali offline');
+    networkStatus = false;
+    clearInterval(myInterval);
+});
+
+fetchData();
+
+
+
 function fetchData() {
-    fetch(urlDetail)
-        .then(function (res) {
-            return res.json();
-        })
-        .then(function (data) {
-            networkDataReceived = true;
-            console.log('From web', data);
+    if (networkStatus) {
+        fetch(urlDetail)
+            .then(function (res) {
+                return res.json();
+            })
+            .then(function (data) {
+                networkDataReceived = true;
+                console.log('From web', data);
 
-            // jika ingin pake local
-            // if (localStorage.data == undefined) {
-            //     console.log('new save to local');
-            //     var dataPost = {};
-            //     dataPost[data.id] = data;
-            //     // dataPost.push(data);
+                // jika ingin pake local
+                // if (localStorage.data == undefined) {
+                //     console.log('new save to local');
+                //     var dataPost = {};
+                //     dataPost[data.id] = data;
+                //     // dataPost.push(data);
 
-            //     let json = JSON.stringify(dataPost);
-            //     localStorage.data = json;
-            // } else {
-            //     console.log('save to local');
-            //     var dataPost = JSON.parse(localStorage.data);
-            //     if (!dataPost[id]) {
-            //         dataPost[data.id] = data;
-            //     } else {
-            //         console.log('data sudah di save');
-            //     }
-            //     console.log(dataPost);
-            //     let json = JSON.stringify(dataPost);
-            //     localStorage.data = json;
-            // }
+                //     let json = JSON.stringify(dataPost);
+                //     localStorage.data = json;
+                // } else {
+                //     console.log('save to local');
+                //     var dataPost = JSON.parse(localStorage.data);
+                //     if (!dataPost[id]) {
+                //         dataPost[data.id] = data;
+                //     } else {
+                //         console.log('data sudah di save');
+                //     }
+                //     console.log(dataPost);
+                //     let json = JSON.stringify(dataPost);
+                //     localStorage.data = json;
+                // }
 
-            fillData(data);
-        });
+                fillData(data);
+            });
+    } else {
+        if ('indexedDB' in window) {
+            readAllData('posts')
+                .then(function (data) {
+                    if (!networkDataReceived) {
+                        console.log('From cache', data);
+                        fillData(data[id]);
+                    }
+                });
+        }
+    }
 }
 
 
