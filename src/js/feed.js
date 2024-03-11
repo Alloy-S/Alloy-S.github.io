@@ -9,7 +9,6 @@ if (localStorage.lastData) {
 }
 
 function install() {
-  // createPostArea.style.display = 'block';
   if (deferredPrompt) {
 
     deferredPrompt.prompt();
@@ -35,10 +34,6 @@ function install() {
   //       }
   //     })
   // }
-}
-
-function closeCreatePostModal() {
-  createPostArea.style.display = 'none';
 }
 
 

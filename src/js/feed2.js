@@ -1,25 +1,26 @@
 var contentExercise = document.querySelector("#ContentExercise")
 const searchParams = new URLSearchParams(window.location.search);
-const id = searchParams.get('id'); // price_descending
+var intallBtn = document.querySelector("#btn-install");
+const id = searchParams.get('id');
 console.log(id);
 
 function openCreatePostModal() {
     // createPostArea.style.display = 'block';
     if (deferredPrompt) {
 
-    deferredPrompt.prompt();
+        deferredPrompt.prompt();
 
-    deferredPrompt.userChoice.then(function (choiceResult) {
-        console.log(choiceResult.outcome);
+        deferredPrompt.userChoice.then(function (choiceResult) {
+            console.log(choiceResult.outcome);
 
-        if (choiceResult.outcome === 'dismissed') {
-            console.log('User cancelled installation');
-        } else {
-            console.log('User added to home screen');
-        }
-    });
+            if (choiceResult.outcome === 'dismissed') {
+                console.log('User cancelled installation');
+            } else {
+                console.log('User added to home screen');
+            }
+        });
 
-    deferredPrompt = null;
+        deferredPrompt = null;
     }
 
     // if ('serviceWorker' in navigator) {
@@ -32,27 +33,9 @@ function openCreatePostModal() {
     // }
 }
 
-function closeCreatePostModal() {
-    createPostArea.style.display = 'none';
-}
 
+intallBtn.addEventListener('click', openCreatePostModal);
 
-// intallBtn.addEventListener('click', openCreatePostModal);
-// shareImageButton.addEventListener('click', openCreatePostModal);
-
-// closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
-
-// Currently not in use, allows to save assets in cache on demand otherwise
-function onSaveButtonClicked(event) {
-    console.log('clicked');
-    if ('caches' in window) {
-        caches.open('user-requested')
-            .then(function (cache) {
-                cache.add('https://httpbin.org/get');
-                cache.add('/src/images/sf-boat.jpg');
-            });
-    }
-}
 
 function clearCards() {
     while (contentExercise.hasChildNodes()) {
@@ -97,25 +80,25 @@ function fillData(data) {
     contentExercise.appendChild(detailElement);
 }
 
-// function updateUI(data) {
-//   clearCards();
-//   for (var i = 0; i < data.length; i++) {
-//     createCard(data[i]);
-//   }
-// }
-
 var urlDetail = `https://test1-pwa-alloy-default-rtdb.asia-southeast1.firebasedatabase.app/posts/${id}.json`
 var networkDataReceived = false;
 
 if (!navigator.onLine) {
     console.log('Browser is offline');
-    // Perform actions for offline mode
-    // For example, load data from localStorage
-    let dataPost = JSON.parse(localStorage.data);
-    let data = dataPost[id];
-    fillData(data);
+    // kalo mau pake local
+    // let dataPost = JSON.parse(localStorage.data);
+    // let data = dataPost[id];
+    // fillData(data);
+    if ('indexedDB' in window) {
+        readAllData('posts')
+            .then(function (data) {
+                if (!networkDataReceived) {
+                    console.log('From cache', data);
+                    fillData(data[id]);
+                }
+            });
+    }
 } else {
-    // If online, fetch data
     console.log('Browser is online');
     fetchData();
 }
@@ -129,38 +112,31 @@ function fetchData() {
             networkDataReceived = true;
             console.log('From web', data);
 
-            if (localStorage.data == undefined) {
-                console.log('new save to local');
-                var dataPost = {};
-                dataPost[data.id] = data;
-                // dataPost.push(data);
+            // jika ingin pake local
+            // if (localStorage.data == undefined) {
+            //     console.log('new save to local');
+            //     var dataPost = {};
+            //     dataPost[data.id] = data;
+            //     // dataPost.push(data);
 
-                let json = JSON.stringify(dataPost);
-                localStorage.data = json;
-            } else {
-                console.log('save to local');
-                var dataPost = JSON.parse(localStorage.data);
-                if (!dataPost[id]) {
-                    dataPost[data.id] = data;
-                } else {
-                    console.log('data sudah di save');
-                }
-                console.log(dataPost);
-                let json = JSON.stringify(dataPost);
-                localStorage.data = json;
-            }
+            //     let json = JSON.stringify(dataPost);
+            //     localStorage.data = json;
+            // } else {
+            //     console.log('save to local');
+            //     var dataPost = JSON.parse(localStorage.data);
+            //     if (!dataPost[id]) {
+            //         dataPost[data.id] = data;
+            //     } else {
+            //         console.log('data sudah di save');
+            //     }
+            //     console.log(dataPost);
+            //     let json = JSON.stringify(dataPost);
+            //     localStorage.data = json;
+            // }
 
             fillData(data);
         });
 }
 
 
-// if ('indexedDB' in window) {
-//   readAllData('posts')
-//     .then(function(data) {
-//       if (!networkDataReceived) {
-//         console.log('From cache', data);
-//         updateUI(data);
-//       }
-//     });
-// }
+
