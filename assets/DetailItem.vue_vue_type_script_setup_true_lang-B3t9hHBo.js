@@ -1,0 +1,1 @@
+import{d as a,h as o,o as l,a as t,t as s}from"./index-BCxpIQ8Y.js";const n={class:"mb-4"},c={class:"text-sm font-medium text-gray-600"},r={class:"text-lg font-semibold"},p=a({__name:"DetailItem",props:{label:{},value:{}},setup(_){return(e,i)=>(l(),o("div",n,[t("p",c,s(e.label),1),t("p",r,s(e.value),1)]))}});export{p as _};
